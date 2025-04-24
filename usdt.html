@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USDT Token Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: auto;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .balance {
+            font-size: 2em;
+            margin: 20px 0;
+        }
+        .value {
+            font-size: 1.2em;
+            color: green;
+        }
+        .send-button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .send-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Your USDT Token</h1>
+        <div class="balance" id="balance">Balance: Loading...</div>
+        <div class="value">
+            <p id="usdValue">USD Value: Loading...</p>
+        </div>
+        <button class="send-button" onclick="transferTokens()">Send USDT</button>
+    </div>
+
+    <script src="https://unpkg.com/tonweb/dist/tonweb.min.js"></script>
+    <script>
+        const TON_CONTRACT_ADDRESS = "EQC8gJ1J-IThF-mlxZQ-l5URHVUoEkMHzOQBhvkZ9KxuJ_4m"; // Your contract address
+        const USDT_API_URL = "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd"; // API to get real USDT price
+
+        // Initialize TonWeb client
+        const tonweb = new TonWeb();
+
+        // Fetch the real-time USDT price from CoinGecko
+        async function getRealUSDTValue() {
+            try {
+                const response = await fetch(USDT_API_URL);
+                const data = await response.json();
+                return data.tether.usd; // Get the USD value of 1 USDT
+            } catch (error) {
+                console.error("Error fetching real USDT value:", error);
+                return 1; // Default to $1 if the API fails
+            }
+        }
+
+        async function getTokenBalance() {
+            try {
+                // Create the Jetton Wallet contract instance
+                const tokenContract = new tonweb.contract.jetton.JettonWallet(TON_CONTRACT_ADDRESS);
+                
+                // Fetch the balance (in base units)
+                const balance = await tokenContract.getBalance();
+
+                // Format the balance to show the token amount (assuming 6 decimals for this example)
+                const formattedBalance = balance.toNumber() / Math.pow(10, 6); // Adjust decimals if needed
+
+                // Get the real USD value of 1 USDT
+                const realUSDTValue = await getRealUSDTValue();
+
+                // Calculate the USD equivalent (using real-time price)
+                const usdValue = formattedBalance * realUSDTValue;
+
+                // Update the UI with balance and USD value
+                document.getElementById("balance").textContent = Balance: ${formattedBalance} USDT;
+                document.getElementById("usdValue").textContent = USD Value: $${usdValue.toFixed(2)};
+            } catch (error) {
+                console.error("Error fetching token balance:", error);
+            }
+        }
+
+        // Simulate sending the token (this is just for demo purposes)
+        function transferTokens() {
+            alert("USDT has been sent! (This is just a demo.)");
+        }
+
+        // Fetch balance on page load
+        getTokenBalance();
+    </script>
+
+</body>
+</html>
